@@ -17,6 +17,14 @@ compile source =
     else
         "Compilation Error"
 
+compileAllPossibilities :: String -> String
+compileAllPossibilities source = 
+    let
+        allParses = (parseExpression . tokenize) source
+        completeParses = filter (null . snd) allParses
+    in
+    unlines ( map (assemble . fst) completeParses)
+
 main :: IO ()
-main = print $ compile "*italic and **bold* but maybe not?**"
+main = putStr $ compileAllPossibilities "_*italic and **bold* but maybe not?**_"
 -- output: "<em>italic and <em>*bold</em> but maybe not?</em>*"

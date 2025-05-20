@@ -8,18 +8,23 @@ import Markdown.Nodes
 -- Applicative parser
 type Parser t = [Token] -> [(t, [Token])]
 
--- read the next symbol as literal text. 
--- This is usually a word. In some cases it can be a symbol that would
--- otherwise have some meaning. 
-parseText :: Parser Node
-parseText (Literal c : ts) = [(Text c, ts)]
-parseText (Star : ts) = [(Text "*", ts)]
-parseText _ = []
+-- Read the next symbol as literal text. 
+-- This is usually a word.
+readText :: Parser Node
+readText (Literal c : ts) = [(Text c, ts)]
+readText (Star : ts) = [(Text "*", ts)]
+readText (Underscore : ts) = [(Text "_", ts)]
+readText _ = []
 
--- Parse a star
-parseStar :: Parser Token
-parseStar (Star : ts) = [(Star, ts)]
-parseStar _ = []
+-- read a star, or fail.
+readStar :: Parser Token
+readStar (Star : ts) = [(Star, ts)]
+readStar _ = []
+
+-- read an underscore, or fail.
+readUnderscore :: Parser Token
+readUnderscore (Underscore : ts) = [(Star, ts)]
+readUnderscore _ = []
 
 
 -- apply multiple parsers applicatively.
@@ -32,7 +37,7 @@ sequential mapper p1 p2 tokens =
 apply :: Parser (b -> c) -> Parser b -> Parser c
 apply = sequential ($)
 
--- A parser that always succeeds, and returns the "success" value. 
+-- A parser that always succeeds, and returns the given "success" value. 
 success :: a -> Parser a
 success a ts = [(a, ts)]
 
@@ -55,26 +60,32 @@ parseConcat = sequential Concat parseSomething parseExpression
 -- Parse **bold** text. 
 parseBold :: Parser Node
 parseBold = success (\_ _ e _ _ -> Bold e) 
-    `apply` parseStar 
-    `apply` parseStar 
+    `apply` readStar
+    `apply` readStar 
     `apply` parseExpression -- e
-    `apply` parseStar 
-    `apply` parseStar
+    `apply` readStar
+    `apply` readStar
     -- let boldMark = sequential (\a b -> b) parseStar parseStar
     -- in sequential (\a b -> Bold b) boldMark (sequential const parseExpression boldMark)
 
 -- Parse *italic* text. 
 parseItalic :: Parser Node
 parseItalic = success (\_ e _ -> Italic e)
-    `apply` parseStar
+    `apply` readStar
     `apply` parseExpression -- e
-    `apply` parseStar
+    `apply` readStar
 --parseItalic = sequential (\a b -> Italic b) parseStar (sequential const parseExpression parseStar)
+
+parseUnderline :: Parser Node 
+parseUnderline = success (\_ e _ -> Underline e)
+    `apply` readUnderscore
+    `apply` parseExpression -- e
+    `apply` readUnderscore
 
 -- Parse "something" -- perform an operation that, once done, is guaranteed to 
 -- progress the input. 
 parseSomething :: Parser Node 
-parseSomething = anyOf [parseBold, parseItalic, parseText]
+parseSomething = anyOf [parseBold, parseUnderline, parseItalic, readText]
 
 -- Parse anything that we are able to. 
 parseExpression :: Parser Node
