@@ -2,6 +2,7 @@ module Markdown.Tokens (
     Token(Literal, Underscore, Star),
     tokenize
 ) where
+
 -- Tokenization
 data Token
     = Literal String
@@ -9,14 +10,25 @@ data Token
     | Star
     deriving (Show, Eq)
 
+tokenConversions :: [(Char, Token)]
+tokenConversions = [
+    ('*', Star),
+    ('_', Underscore)]
+
+usedSymbols :: [Char]
+usedSymbols = map fst tokenConversions
+
 -- Convert a string into a series of tokens. 
 tokenize :: String -> [Token]
-tokenize [] = []
-tokenize ('\\' : c : cs) = 
-    let (s, remainder) = span (/= '*') cs in 
+tokenize "" = []
+tokenize ('\\' : c : cs) =
+    let (s, remainder) = span (`notElem` usedSymbols) cs in
     Literal (c:s)  : tokenize remainder
-tokenize ('*' : cs) = Star : tokenize cs
-tokenize ('_' : cs) = Underscore : tokenize cs
-tokenize cs = 
-    let (s, remainder) = span (/= '*') cs in 
-    Literal s : tokenize remainder
+tokenize (c : cs) =
+    let match = filter (\x -> c == (fst x)) tokenConversions in
+    if null match then
+        let (s, remainder) = span (`notElem` usedSymbols) cs in
+        Literal (c:s)  : tokenize remainder
+    else
+        let (_, tokenType) = head match in
+        tokenType : tokenize cs

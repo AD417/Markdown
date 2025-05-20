@@ -89,4 +89,4 @@ parseSomething = anyOf [parseBold, parseUnderline, parseItalic, readText]
 
 -- Parse anything that we are able to. 
 parseExpression :: Parser Node
-parseExpression = oneOf parseConcat parseSomething
+parseExpression = oneOf parseSomething parseConcat
