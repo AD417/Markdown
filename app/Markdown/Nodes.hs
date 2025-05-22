@@ -1,11 +1,12 @@
 module Markdown.Nodes ( 
-    Node(Italic, Underline, Bold, Concat, Text)
+    Node(..)
 ) where
 
 -- Nodes in an AST Tree
 data Node
     = Italic Node
     | Underline Node
+    | Strikethrough Node
     | Bold Node
     | Concat Node Node
     | Text String

@@ -4,6 +4,7 @@ module Markdown.Parsing (
 
 import Markdown.Tokens
 import Markdown.Nodes
+-- import Debug.Trace (trace)
 
 -- Applicative parser
 type Parser t = [Token] -> [(t, [Token])]
@@ -14,6 +15,7 @@ readText :: Parser Node
 readText (Literal c : ts) = [(Text c, ts)]
 readText (Star : ts) = [(Text "*", ts)]
 readText (Underscore : ts) = [(Text "_", ts)]
+readText (Tilde : ts) = [(Text "~", ts)]
 readText _ = []
 
 -- read a star, or fail.
@@ -25,6 +27,10 @@ readStar _ = []
 readUnderscore :: Parser Token
 readUnderscore (Underscore : ts) = [(Star, ts)]
 readUnderscore _ = []
+
+readTilde :: Parser Token
+readTilde (Tilde : ts) = [(Tilde, ts)]
+readTilde _ = []
 
 
 -- apply multiple parsers applicatively.
@@ -59,9 +65,9 @@ parseConcat = sequential Concat parseSomething parseExpression
 
 -- Parse **bold** text. 
 parseBold :: Parser Node
-parseBold = success (\_ _ e _ _ -> Bold e) 
+parseBold = success (\_ _ e _ _ -> Bold e)
     `apply` readStar
-    `apply` readStar 
+    `apply` readStar
     `apply` parseExpression -- e
     `apply` readStar
     `apply` readStar
@@ -76,16 +82,27 @@ parseItalic = success (\_ e _ -> Italic e)
     `apply` readStar
 --parseItalic = sequential (\a b -> Italic b) parseStar (sequential const parseExpression parseStar)
 
-parseUnderline :: Parser Node 
-parseUnderline = success (\_ e _ -> Underline e)
+parseUnderline :: Parser Node
+parseUnderline = success (\_ _ e _ _ -> Underline e)
+    `apply` readUnderscore
     `apply` readUnderscore
     `apply` parseExpression -- e
     `apply` readUnderscore
+    `apply` readUnderscore
+
+parseStrikethrough :: Parser Node
+parseStrikethrough = success (\_ _ e _ _ -> Strikethrough e)
+    `apply` readTilde
+    `apply` readTilde
+    `apply` parseExpression -- e
+    `apply` readTilde
+    `apply` readTilde --(trace ('\n' : show x) x)
+
 
 -- Parse "something" -- perform an operation that, once done, is guaranteed to 
 -- progress the input. 
-parseSomething :: Parser Node 
-parseSomething = anyOf [parseBold, parseUnderline, parseItalic, readText]
+parseSomething :: Parser Node
+parseSomething = anyOf [parseBold, parseUnderline, parseStrikethrough, parseItalic, readText]
 
 -- Parse anything that we are able to. 
 parseExpression :: Parser Node

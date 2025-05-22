@@ -1,0 +1,24 @@
+### A test file
+
+Consider this a *simple* file utility to allow me to test all of the capabilities of the markdown language that I have created. 
+
+This file is ~~comically preemptive~~ not currently able to be parsed in its entirety, because the parser is missing a bunch of the utilities that it requires. 
+
+Womp womp. 
+
+**Eventually**, I expect that __all__ of the stuff going on in here will be handle-able by the markdown to HTML parser, including:
+
+- Bold and italics. Bold involves `**two stars**` around things, while Italics only needs `*one star*`. 
+  This was... honestly really annoying to set up because of inevitable issues when the markdown runs into strange compilation errrors. 
+- Underlines. They have `__Two underscores__` around them. Not sure why it needs to be two. In some implementations, one underscore can mean italics. 
+  I don't implement that here.
+- Strikethroughs. Good for ~~redacting classified information~~ doing a bit where something is so stupid it shouldn't be taken seriously... 
+  Sadly, I still need to indicate it shouldn't be. It uses `~~two tildes~~` on either side.
+- Lists. Lists begin with a minus/dash/tac at the beginning of a row, followed by a space. 
+- Inline code. `\`Your code\`` gets backticks around it. Also, there are backslashes for escaping characters during compilation. 
+  Discord and Slack don't even support those inline. 
+- Paragraphs. On paper, each paragraph has two newlines between them. 
+- Spoilers. Spoiler warning: ||you've been spoiled||. Just put `||two bars||` around your secrets. 
+
+I'm mainly doing this because I want to make a website, and would prefer to not have to deal with the nonsense that is writing out HTML code. 
+I like using a lot of markdown shenanigans, so I figure that making a thing to compile it the way I want it to will expedite my ability to write new pages in the future. 

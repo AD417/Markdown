@@ -5,27 +5,33 @@ import Markdown.Tokens
 import Markdown.Parsing
 import Markdown.Assembly
 
+completeParses :: String -> [String]
+completeParses x = map (assemble. fst) $ filter (null . snd) $ (parseExpression . tokenize) x
+
+
 -- Determine the first complete and valid parse on the input string, and return
 -- the AST it produces. 
 compile :: String -> String
 compile source =
     let
-        allParses = (parseExpression . tokenize) source
-        completeParses = filter (null . snd) allParses
+        results = completeParses source
     in
-    if not $ null completeParses then
-        (assemble . fst . head) completeParses
+    if not $ null results then
+        head results
     else
         "Compilation Error"
 
 compileAllPossibilities :: String -> String
 compileAllPossibilities source = 
-    let
-        allParses = (parseExpression . tokenize) source
-        completeParses = filter (null . snd) allParses
-    in
-    unlines ( map (assemble . fst) completeParses)
+    unlines $ completeParses source
+
+countCompilations :: String -> Int
+countCompilations source = length $ completeParses source
 
 main :: IO ()
-main = putStr $ compileAllPossibilities "_*italic and **bold* but maybe not?**_"
+main = do
+    fileText <- readFile "testcat.txt"
+    -- putStr $ unlines ( map show $ tokenize fileText )
+    -- putStr $ compileAllPossibilities $ "***************"
+    print $ countCompilations "*****************"
 -- output: "<em>italic and <em>*bold</em> but maybe not?</em>*"
